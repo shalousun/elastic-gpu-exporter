@@ -3,14 +3,16 @@ package ptree
 import (
 	"bufio"
 	"io/ioutil"
-	"k8s.io/klog"
 	"os"
 	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
+
+	"k8s.io/klog"
 )
-const(
+
+const (
 	QOSGuaranteed = "guaranteed"
 	QOSBurstable  = "burstable"
 	QOSBestEffort = "besteffort"
@@ -32,15 +34,15 @@ type Scanner interface {
 	Scan(UID, QOS string) (Pod, error)
 }
 
-type ScannerImpl struct{
+type ScannerImpl struct {
 	pod       *Pod
 	container *Container
 }
 
 func NewScanner() Scanner {
 	return &ScannerImpl{
-		pod:          NewP(),
-		container:    NewC(),
+		pod:       NewP(),
+		container: NewC(),
 	}
 }
 
@@ -61,7 +63,7 @@ func (scan *ScannerImpl) getContainers(p *Pod) (*Pod, error) {
 	podPath := scan.getPodPath(p.UID, p.QOS)
 	basePodPath := filepath.Clean(filepath.Join(CgroupBase, podPath))
 	containers, err := scan.readContainerFile(basePodPath, p)
-	if err !=nil {
+	if err != nil {
 		klog.Errorf("Cannot read the containers in the pod: pod%s, %v", p.UID, err)
 		return nil, err
 	}
@@ -69,22 +71,22 @@ func (scan *ScannerImpl) getContainers(p *Pod) (*Pod, error) {
 		UID:        p.UID,
 		QOS:        p.QOS,
 		Containers: containers,
-	},nil
+	}, nil
 }
 
-//getPodPath is to get the path of the pod ,such as:kubepods/besteffort/pod17eb80b0-6085-4d12-8e79-553e799d2f0b
+// getPodPath is to get the path of the pod ,such as:kubepods/besteffort/pod17eb80b0-6085-4d12-8e79-553e799d2f0b
 func (scan *ScannerImpl) getPodPath(UID string, QOS string) (podPath string) {
 	var parentPath CgroupName
 	switch QOS {
 	case QOSGuaranteed:
-		parentPath = append(parentPath,kubeRoot)
+		parentPath = append(parentPath, kubeRoot)
 	case QOSBurstable:
 		parentPath = append(parentPath, kubeRoot, QOSBurstable)
 	case QOSBestEffort:
 		parentPath = append(parentPath, kubeRoot, QOSBestEffort)
 	}
 	podContainer := PodPrefix + UID
-	parentPath = append(parentPath,podContainer)
+	parentPath = append(parentPath, podContainer)
 	podPath = scan.transformToPath(parentPath)
 	return podPath
 }
@@ -93,20 +95,20 @@ func (scan *ScannerImpl) transformToPath(cgroupName CgroupName) string {
 	return "/" + path.Join(cgroupName...)
 }
 
-func (scan *ScannerImpl)readContainerFile(podPath string, pod *Pod) (map[string]*Container, error) {
+func (scan *ScannerImpl) readContainerFile(podPath string, pod *Pod) (map[string]*Container, error) {
 	fileList, err := ioutil.ReadDir(podPath)
-	klog.Info("podpath-------",podPath)
+	klog.Info("podpath-------", podPath)
 	if err != nil {
 		klog.Errorf("Can't read %s, %v", podPath, err)
 		return nil, err
 	}
-	for _,file :=range fileList {
-		klog.Info("file-----------:",file)
+	for _, file := range fileList {
+		klog.Info("file-----------:", file)
 		containerId := file.Name()
 		if IsContainerID(containerId) {
 			scan.pod.AddContainer(containerId)
-			scan.pod.Containers[containerId] =  &Container{
-				ID: containerId,
+			scan.pod.Containers[containerId] = &Container{
+				ID:     containerId,
 				Parent: pod,
 			}
 			procPath := filepath.Join(podPath, containerId, CgroupProcs)
@@ -116,12 +118,12 @@ func (scan *ScannerImpl)readContainerFile(podPath string, pod *Pod) (map[string]
 				return nil, err
 			}
 			scan.pod.Containers[containerId].Processes = process
-			}
+		}
 	}
 	return scan.pod.Containers, nil
 }
 
-func (scan *ScannerImpl)readPidFile(procPath string, container *Container) (map[int]*Process, error) {
+func (scan *ScannerImpl) readPidFile(procPath string, container *Container) (map[int]*Process, error) {
 	file, err := os.Open(procPath)
 	if err != nil {
 		klog.Errorf("Cannot read %s, %v", procPath, err)
@@ -133,8 +135,8 @@ func (scan *ScannerImpl)readPidFile(procPath string, container *Container) (map[
 		line := scanner.Text()
 		if pid, err := strconv.Atoi(line); err == nil {
 			scan.container.AddProcess(pid)
-			scan.container.Processes[pid] =  &Process{
-				Pid: pid,
+			scan.container.Processes[pid] = &Process{
+				Pid:    pid,
 				Parent: container,
 			}
 		}

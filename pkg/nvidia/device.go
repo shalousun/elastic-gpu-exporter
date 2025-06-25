@@ -1,21 +1,23 @@
 package nvidia
 
 import (
-	"k8s.io/klog"
-	process "elastic-gpu-exporter/pkg/ptree"
 	"time"
+
+	process "elasticgpu.io/elastic-gpu-exporter/pkg/ptree"
+
+	"k8s.io/klog"
 	//"github.com/alex337/go-nvml"
 	"tkestack.io/nvml"
 )
 
 type Device interface {
-	GetDeviceUsage(cardNum int)  (map[int]*process.ProcessUsage,error)
+	GetDeviceUsage(cardNum int) (map[int]*process.ProcessUsage, error)
 }
 
 type DeviceImpl struct {
 }
 
-func (device *DeviceImpl) GetDeviceUsage(cardNum int)  (map[int]*process.ProcessUsage, error ){
+func (device *DeviceImpl) GetDeviceUsage(cardNum int) (map[int]*process.ProcessUsage, error) {
 	nvml.Init()
 	defer nvml.Shutdown()
 	dev, _ := nvml.DeviceGetHandleByIndex(uint(cardNum))
@@ -80,8 +82,8 @@ func (device *DeviceImpl) getPidUsage(pid int) (*process.ProcessUsage, error) {
 			}
 		}
 		return &process.ProcessUsage{
-			GPUMem:   usedMemory,
-			GPUCore:   usedCore,
+			GPUMem:  usedMemory,
+			GPUCore: usedCore,
 		}, nil
 	}
 	return nil, err

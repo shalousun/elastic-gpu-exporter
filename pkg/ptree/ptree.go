@@ -2,10 +2,11 @@ package ptree
 
 import (
 	"fmt"
-	"elastic-gpu-exporter/pkg/util"
 	"strings"
 	"sync"
 	"time"
+
+	"elasticgpu.io/elastic-gpu-exporter/pkg/util"
 
 	"k8s.io/klog"
 )
@@ -91,8 +92,8 @@ func (p *PTreeImpl) nextSnapshot() error {
 			snapshot.addPod(&pod)
 		}
 	}
-	klog.Info("time:",time.Now())
-	klog.Info("nextSnapshot-------",snapshot)
+	klog.Info("time:", time.Now())
+	klog.Info("nextSnapshot-------", snapshot)
 
 	p.mu.Lock()
 	defer p.mu.Unlock()

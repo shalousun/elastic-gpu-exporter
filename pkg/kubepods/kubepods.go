@@ -1,23 +1,22 @@
 package kubepods
 
 import (
-	v12 "k8s.io/client-go/listers/core/v1"
-	"k8s.io/client-go/rest"
-	"elastic-gpu-exporter/pkg/util"
 	"time"
 
+	"elasticgpu.io/elastic-gpu-exporter/pkg/util"
+
 	v1 "k8s.io/api/core/v1"
-
-	"k8s.io/client-go/tools/cache"
-
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/client-go/informers"
 	"k8s.io/client-go/kubernetes"
+	v12 "k8s.io/client-go/listers/core/v1"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/cache"
 	"k8s.io/klog"
 )
 
-const(
+const (
 	RecommendedKubeConfigPathEnv = "KUBECONFIG"
 )
 
@@ -53,7 +52,7 @@ func NewWatcher(handler *Handler, gpuLabels []string, node string) Watcher {
 	//if err != nil {
 	//	klog.Fatalf("Could not get config")
 	//}
-    //------------------
+	//------------------
 	// create the clientset
 	//clientset, err = kubernetes.NewForConfig(restConfig)
 
@@ -62,7 +61,6 @@ func NewWatcher(handler *Handler, gpuLabels []string, node string) Watcher {
 	//if err != nil {
 	//	logrus.WithError(err).Fatal("could not generate dynamic client for config")
 	//}
-
 
 	config, err := rest.InClusterConfig()
 	if err != nil {

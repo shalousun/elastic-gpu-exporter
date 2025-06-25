@@ -2,9 +2,10 @@ package util
 
 import (
 	"fmt"
-	v1 "k8s.io/api/core/v1"
 	"strconv"
 	"time"
+
+	v1 "k8s.io/api/core/v1"
 )
 
 var NeverStop = make(chan struct{})
@@ -13,7 +14,7 @@ var NeverStop = make(chan struct{})
 func Loop(f func(), duration time.Duration, stop <-chan struct{}) {
 	for range time.Tick(duration) {
 		select {
-		case <- stop:
+		case <-stop:
 			return
 		default:
 			f()
@@ -41,4 +42,3 @@ func Decimal(value float64) float64 {
 	value, _ = strconv.ParseFloat(fmt.Sprintf("%.2f", value), 64)
 	return value
 }
-
